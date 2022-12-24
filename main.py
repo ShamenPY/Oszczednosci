@@ -28,17 +28,24 @@ class App(tk.Frame):
 
         def submitValues():
             print(nazwa1.get(),kwota1.get(),data1.get(),opis1.get())
+            koniec = 1
 
-        nazwatransakcji = tk.Entry(root,textvariable=nazwa1 ).grid(column=1,row=6)
-        kwotatransakcji = tk.Entry(root,textvariable=kwota1 ).grid(column=2,row=6)
-        datatransakcji = tk.Entry(root,textvariable=data1).grid(column=3,row=6)
-        opistransakcji = tk.Entry(root,textvariable=opis1 ).grid(column=4,row=6)
+        def dodaj():
+            print("Dodawanie Transakcji Test")
+            koniec = 0
+            while koniec ==0:
+                nazwatransakcji = tk.Entry(root, textvariable=nazwa1).grid(column=1, row=6)
+                kwotatransakcji = tk.Entry(root, textvariable=kwota1).grid(column=2, row=6)
+                datatransakcji = tk.Entry(root, textvariable=data1).grid(column=3, row=6)
+                opistransakcji = tk.Entry(root, textvariable=opis1).grid(column=4, row=6)
+                submit = tk.Button(root, text="Zapisz", command=submitValues).grid(column=6, row=5)
 
 
-        submit = tk.Button(root, text="Zapisz", command=submitValues).grid(column=6,row=5)
+
+
         frm.grid()
 
-        dodaj_transakcje = ttk.Button(root, text="Dodaj Transakcję", command=Transakcja.dodaj).grid(column=1,row=1)
+        dodaj_transakcje = ttk.Button(root, text="Dodaj Transakcję", command=dodaj).grid(column=1,row=1)
         usun_transakcje = ttk.Button(root, text="Usuń Transakcję", command=Transakcja.usun).grid(column=2, row=1)
 
 
@@ -54,9 +61,6 @@ class Transakcja():
         pass
     def opis(self):
         pass
-
-    def dodaj():
-        print("Dodawanie Transakcji Test")
     def usun():
         print("Usuwanie Transakcji Test")
 
@@ -67,6 +71,14 @@ App = App()
 
 
 
+
+"""
+Plany na dzis:
+
+Petla ktora bedzie odpalac sie gdy chcesz dodac transakcje, wywali ci ona te entry do wpisywania tekstu,
+po petli wszystko sie zapisze i stworzy sie pod spodem cala transakcja
+
+"""
 
 
 
