@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-
+import sqlite3
 
 class App(tk.Frame):
     def __init__(self):
@@ -27,7 +27,7 @@ class App(tk.Frame):
         self.kwota1tekst = self.kwota1.get()
         self.data1tekst = self.data1.get()
         self.opis1tekst = self.opis1.get()
-        self.data_to_txt()
+        self.database()
 
 
 
@@ -72,20 +72,26 @@ class App(tk.Frame):
         message = tk.Label(self.root, text="Kwota").grid(column=2, row=8)
         message = tk.Label(self.root, text="Data ").grid(column=3, row=8)
         message = tk.Label(self.root, text="    Opis").grid(column=4, row=8)
-    def data_to_txt(self):
-        """
-        This function is have to transfer data from tkinter to .txt file.
-        """
-        with open("dane transakcji.txt", "w") as f:
-            f.write(self.nazwa1tekst)
-            f.write(";")
-            f.write(self.kwota1tekst)
-            f.write(";")
-            f.write(self.data1tekst)
-            f.write(";")
-            f.write(self.opis1tekst)
-            f.write(";")
-            f.close()
+    def database(self):
+        conn = sqlite3.connect("baza.db")
+        conn.execute("insert into transakcje (nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji) values (?, ?, ?, ?)",
+                    (self.nazwa1tekst,self.kwota1tekst,self.data1tekst,self.opis1tekst))
+        print("Opened database successfully")
+        cursor = conn.execute(
+            "SELECT nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji from transakcje")
+        for row in cursor:
+            print("NAZWA = ", row[0])
+            print("KWOTA = ", row[1])
+            print("DATA = ", row[2])
+            print("OPIS = ", row[3], "\n")
+
+        print("Operation done successfully")
+
+        conn.execute("DELETE from transakcje where nazwa_transakcji = 'nazwatest';")
+        conn.commit()
+        conn.close()
+
+
 
 App = App()
 
