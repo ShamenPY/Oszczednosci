@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import ttk
 import sqlite3
 
+
 class App(tk.Frame):
     def __init__(self):
 
@@ -27,7 +28,8 @@ class App(tk.Frame):
         self.kwota1tekst = self.kwota1.get()
         self.data1tekst = self.data1.get()
         self.opis1tekst = self.opis1.get()
-        self.database()
+        self.DBsubmit()
+        self.DBread()
 
 
 
@@ -72,11 +74,26 @@ class App(tk.Frame):
         message = tk.Label(self.root, text="Kwota").grid(column=2, row=8)
         message = tk.Label(self.root, text="Data ").grid(column=3, row=8)
         message = tk.Label(self.root, text="    Opis").grid(column=4, row=8)
-    def database(self):
+
+    def DBsubmit(self):
+        """
+
+        """
         conn = sqlite3.connect("baza.db")
         conn.execute("insert into transakcje (nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji) values (?, ?, ?, ?)",
                     (self.nazwa1tekst,self.kwota1tekst,self.data1tekst,self.opis1tekst))
-        print("Opened database successfully")
+
+
+        conn.commit()
+
+
+        conn.close()
+    def DBread(self):
+
+        """
+        This function is have to transform data from database to python, and print sorted data's
+        """
+        conn = sqlite3.connect("baza.db")
         cursor = conn.execute(
             "SELECT nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji from transakcje")
         for row in cursor:
@@ -85,11 +102,53 @@ class App(tk.Frame):
             print("DATA = ", row[2])
             print("OPIS = ", row[3], "\n")
 
-        print("Operation done successfully")
+        cursor = conn.execute(
+            "SELECT * from transakcje ORDER BY kwota_transakcji DESC")
 
-        conn.execute("DELETE from transakcje where nazwa_transakcji = 'nazwatest';")
+        for i in cursor:
+
+
+            # Create an instance of tkinter frame
+            win = Tk()
+
+            # Set the size of the tkinter window
+            win.geometry("700x350")
+
+            # Create an object of Style widget
+            style = ttk.Style()
+            style.theme_use('clam')
+
+            # Add a Treeview widget
+            tree = ttk.Treeview(win, column=("Nazwa", "Kota", "Data","Opis"), show='headings', height=5)
+            tree.column("# 1", anchor=CENTER)
+            tree.heading("# 1", text="Nazwa Transakcji")
+            tree.column("# 2", anchor=CENTER)
+            tree.heading("# 2", text="Kwota Transakcji")
+            tree.column("# 3", anchor=CENTER)
+            tree.heading("# 3", text="Data Transakcji")
+            tree.column("# 4", anchor=CENTER)
+            tree.heading("# 4", text="Opis Transakcji")
+
+            # Insert the data in Treeview widget
+            tree.insert('', 'end', text="1", values=(self.nazwa1tekst, 'Kumar', '17701'))
+            tree.insert('', 'end', text="1", values=('Ankush', 'Mathur', '17702'))
+            tree.insert('', 'end', text="1", values=('Manisha', 'Joshi', '17703'))
+            tree.insert('', 'end', text="1", values=('Shivam', 'Mehrotra', '17704'))
+
+            tree.pack()
+
+            win.mainloop()
+
+
+            print(i)
+            message = tk.Label(self.root, text=i[0]).grid(column=1,row=10),
+            message = tk.Label(self.root, text=i[1]).grid(column=2,row=10),
+            message = tk.Label(self.root, text=i[2]).grid(column=3,row=10),
+            message = tk.Label(self.root, text=i[3]).grid(column=4, row=10),
+
+
         conn.commit()
-        conn.close()
+
 
 
 
@@ -97,3 +156,14 @@ App = App()
 
 
 
+
+#
+# screen = Tk()
+# def submit():
+#     print("XD")
+# screen.geometry('400x400')
+# v = IntVar()
+# Radiobutton(screen, text="Sortuj od najnizszej kwoty", variable=v, value=1,command=submit).pack(anchor=W)
+# Radiobutton(screen, text="Sortuj od najwyzszej kwoty", variable=v, value=2,command=submit).pack(anchor=W)
+#
+# mainloop()
