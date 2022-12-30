@@ -75,6 +75,13 @@ class App(tk.Frame):
         message = tk.Label(self.root, text="Data ").grid(column=3, row=8)
         message = tk.Label(self.root, text="    Opis").grid(column=4, row=8)
 
+
+    # def ButtonOfChoose():
+    #     print("XD")
+    # def ChooseList(self):
+    #     v = IntVar()
+    #     Radiobutton(screen, text="Sortuj od najnizszej kwoty", variable=v, value=1, command=ChooseList).pack(anchor=W)
+    #     Radiobutton(screen, text="Sortuj od najwyzszej kwoty", variable=v, value=2, command=ChooseList).pack(anchor=W)
     def DBsubmit(self):
         """
 
@@ -90,22 +97,28 @@ class App(tk.Frame):
         conn.close()
     def DBread(self):
 
+
         """
         This function is have to transform data from database to python, and print sorted data's
         """
         conn = sqlite3.connect("baza.db")
         cursor = conn.execute(
             "SELECT nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji from transakcje")
-        for row in cursor:
-            print("NAZWA = ", row[0])
-            print("KWOTA = ", row[1])
-            print("DATA = ", row[2])
-            print("OPIS = ", row[3], "\n")
+        for i in cursor:
+            # print("NAZWA = ", row[0])
+            # print("KWOTA = ", row[1])
+            # print("DATA = ", row[2])
+            # print("OPIS = ", row[3], "\n")
+            list_of_data = []
+            list_of_data.append(i)
+
+
 
         cursor = conn.execute(
             "SELECT * from transakcje ORDER BY kwota_transakcji DESC")
 
         for i in cursor:
+
 
 
             # Create an instance of tkinter frame
@@ -131,24 +144,19 @@ class App(tk.Frame):
 
             # Insert the data in Treeview widget
             tree.insert('', 'end', text="1", values=(self.nazwa1tekst, 'Kumar', '17701'))
-            tree.insert('', 'end', text="1", values=('Ankush', 'Mathur', '17702'))
+            tree.insert('', 'end', text="1", values=('0','0','0','0'))
             tree.insert('', 'end', text="1", values=('Manisha', 'Joshi', '17703'))
             tree.insert('', 'end', text="1", values=('Shivam', 'Mehrotra', '17704'))
-
             tree.pack()
-
             win.mainloop()
 
-
-            print(i)
             message = tk.Label(self.root, text=i[0]).grid(column=1,row=10),
             message = tk.Label(self.root, text=i[1]).grid(column=2,row=10),
             message = tk.Label(self.root, text=i[2]).grid(column=3,row=10),
             message = tk.Label(self.root, text=i[3]).grid(column=4, row=10),
-
-
         conn.commit()
-
+        conn.close()
+        return list_of_data
 
 
 
@@ -159,11 +167,10 @@ App = App()
 
 #
 # screen = Tk()
-# def submit():
+# def ChooseList():
 #     print("XD")
-# screen.geometry('400x400')
 # v = IntVar()
-# Radiobutton(screen, text="Sortuj od najnizszej kwoty", variable=v, value=1,command=submit).pack(anchor=W)
-# Radiobutton(screen, text="Sortuj od najwyzszej kwoty", variable=v, value=2,command=submit).pack(anchor=W)
+# Radiobutton(screen, text="Sortuj od najnizszej kwoty", variable=v, value=1,command=ChooseList).pack(anchor=W)
+# Radiobutton(screen, text="Sortuj od najwyzszej kwoty", variable=v, value=2,command=ChooseList).pack(anchor=W)
 #
 # mainloop()
