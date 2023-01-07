@@ -4,173 +4,173 @@ from tkinter import ttk
 import sqlite3
 
 
-class App(tk.Frame):
+def database_read(sorting_string):
+    """
+    This function is have to transform data from database to python and return list of data
+    """
+    conn = sqlite3.connect("baza.db")
+    cursor = conn.execute(f"SELECT * FROM transactions {sorting_string}")
+
+    list_of_data = []
+    for i in cursor:
+        list_of_data.append(i)
+
+    return list_of_data
+
+
+class App:
     def __init__(self):
-
+        super().__init__()
+        self.date = None
+        self.data_to_number = None
+        self.price1text = None
+        self.description1text = None
+        self.data1text = None
+        self.name1text = None
+        self.date_int = None
         self.root = tk.Tk()
-        frm = ttk.Frame(self.root,padding=10)
-        self.root.geometry("960x1024")
-        self.root.title("Oszczędności")
-        self.create_window()
-
-
-        self.nazwa1 = tk.StringVar()
-        self.kwota1 = tk.StringVar()
+        self.Name1 = tk.StringVar()
+        self.price1 = tk.StringVar()
         self.data1 = tk.StringVar()
-        self.opis1 = tk.StringVar()
-        frm.grid()
+        self.description1 = tk.StringVar()
+        self.main()
 
         self.root.mainloop()
 
-    def submit_values(self,nazwatransaskcji,kwotatransakcji,datatransakcji,opistransakcji):
-        print(self.nazwa1.get(),self.kwota1.get(),self.data1.get(),self.opis1.get())
-        self.nazwa1tekst = self.nazwa1.get()
-        self.kwota1tekst = self.kwota1.get()
-        self.data1tekst = self.data1.get()
-        self.opis1tekst = self.opis1.get()
-        self.DBsubmit()
-        self.DBread()
+    def main(self):
+        self.create_window()
+        self.add()
+        self.submit_values()
+        database_read(sorting_string=None)
 
+    @staticmethod
+    def delete():
+        print("Delete transaction Test")
 
+    def print_transactions(self, sorting_string="ORDER BY price_of_transaction DESC"):
+        """
+        This function is have to create window where are all data of transactions
+        """
+        list_of_data = database_read(sorting_string)
+        conn = sqlite3.connect("baza.db")
+        win = Tk()
+        win.geometry("700x350")
+        style = ttk.Style()
+        style.theme_use('clam')
 
-        koniec = 1
+        tree = ttk.Treeview(win, show='headings', height=10, columns="#1, #2, #3, #4")
+        tree.column("#1", anchor=CENTER)
+        tree.heading("# 1", text="Name transaction")
+        tree.column("# 2", anchor=CENTER)
+        tree.heading("# 2", text="price transaction")
+        tree.column("# 3", anchor=CENTER)
+        tree.heading("# 3", text="Data transaction")
+        tree.column("# 4", anchor=CENTER)
+        tree.heading("# 4", text="description transaction")
 
-    def usun(self):
-        print("Usuwanie Transakcji Test")
-    def dodaj(self):
+        # Change data (for example: 20233001 to 01.30.2023)
+        for i in list_of_data:
+            self.date = str(i[2])
+
+            # self.date = self.data_to_number
+
+            self.date_int = (self.date[6:8] + "." + self.date[4:6] + "." + self.date[0:4])
+            # self.date_int = self(f"{self.date[6:7]}:{self.date[4:5]}:{self.date[0:3]}")
+            print(self.date_int)
+
+            tree.insert('', 'end', text="1", values=(i[0], i[1], self.date_int, i[3]))
+
+        tree.pack()
+        win.mainloop()
+
+        conn.commit()
+        conn.close()
+
+    def submit_values(self):
+        """
+        This function is have to get text from entries (data of name, price, date, description)
+        """
+        self.name1text = self.Name1.get()
+        self.price1text = self.price1.get()
+        self.data1text = self.data1.get()
+        self.description1text = self.description1.get()
+        self.database_submit()
+        self.print_transactions()
+
+    def add(self):
         """
         This function is current when button "Add Transaction" was used.
-        She is have to create entries and button off submit values which have to save data from the user.
+        She is to create entries and button off submit values which have to save data from the user.
         """
-        print("Dodawanie Transakcji Test")
-        nazwatransakcji = tk.Entry(self.root, textvariable=self.nazwa1)
-        nazwatransakcji.grid(column=1, row=6)
-        kwotatransakcji = tk.Entry(self.root, textvariable=self.kwota1)
-        kwotatransakcji.grid(column=2, row=6)
-        datatransakcji = tk.Entry(self.root, textvariable=self.data1)
-        datatransakcji.grid(column=3, row=6)
-        opistransakcji = tk.Entry(self.root, textvariable=self.opis1)
-        opistransakcji.grid(column=4, row=6)
 
-        tk.Button(self.root, text="Zapisz", command=lambda:
-        self.submit_values(nazwatransakcji,kwotatransakcji,datatransakcji,opistransakcji)).grid(column=6,row=5)
+        name_of_transaction = tk.Entry(self.root, textvariable=self.Name1)
+        name_of_transaction.grid(column=1, row=6)
+        price_of_transaction = tk.Entry(self.root, textvariable=self.price1)
+        price_of_transaction.grid(column=2, row=6)
+        data_of_transaction = tk.Entry(self.root, textvariable=self.data1)
+        data_of_transaction.grid(column=3, row=6)
+        description_of_transaction = tk.Entry(self.root, textvariable=self.description1)
+        description_of_transaction.grid(column=4, row=6)
+
+        tk.Button(self.root, text="Submit", command=lambda:
+        self.submit_values()).grid(column=6, row=5)
 
     def create_window(self):
         """
-        This function is have to create texts and buttons,
-        generally She is have to create widgets which won't change self.
+        This function is have to create main window with texts and buttons
+        """
+        self.root.geometry("960x1024")
+        self.root.title("Oszczędności")
+        add_transaction = ttk.Button(self.root, text="Add Transaction", command=self.add)
+        add_transaction.grid(column=1, row=1)
+        delete_transaction = ttk.Button(self.root, text="Delete Transaction", command=self.delete())
+        delete_transaction.grid(column=2, row=1)
+        tk.Label(self.root, text="Name transaction").grid(column=1, row=5)
+        tk.Label(self.root, text="price").grid(column=2, row=5)
+        tk.Label(self.root, text="Data ").grid(column=3, row=5)
+        tk.Label(self.root, text="    description").grid(column=4, row=5)
+
+        sorting_string = StringVar()
+        #Buttons of sorting
+        Radiobutton(self.root, text="Sort by cheapest", variable=sorting_string,
+                    value="ORDER BY price_of_transaction",
+                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=10)
+        Radiobutton(self.root, text="Sort by most expensive", variable=sorting_string,
+                    value="ORDER BY price_of_transaction DESC",
+                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=11)
+        Radiobutton(self.root, text="Sort by most recent", variable=sorting_string,
+                    value="ORDER BY data_of_transaction",
+                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=12)
+        Radiobutton(self.root, text="Sort by oldest", variable=sorting_string,
+                    value="ORDER BY data_of_transaction DESC",
+                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=13)
+
+    def database_submit(self):
+        """
+        This function is have to change data (for example: 2023.01.01 to 20230101 ) for easy sort
+        and submit all data from user to database
         """
 
-        dodaj_transakcje = ttk.Button(self.root, text="Dodaj Transakcję", command=self.dodaj)
-        dodaj_transakcje.grid(column=1, row=1)
-        usun_transakcje = ttk.Button(self.root, text="Usuń Transakcję", command=self.usun)
-        usun_transakcje.grid(column=2, row=1)
-        message = tk.Label(self.root, text="Nazwa Transakcji").grid(column=1, row=5)
-        message = tk.Label(self.root, text="Kwota").grid(column=2, row=5)
-        message = tk.Label(self.root, text="Data ").grid(column=3, row=5)
-        message = tk.Label(self.root, text="    Opis").grid(column=4, row=5)
+        self.data1text = str(self.data1text)
+        self.data_to_number = self.data1text
 
-        message = tk.Label(self.root, text="Nazwa Transakcji").grid(column=1, row=8)
-        message = tk.Label(self.root, text="Kwota").grid(column=2, row=8)
-        message = tk.Label(self.root, text="Data ").grid(column=3, row=8)
-        message = tk.Label(self.root, text="    Opis").grid(column=4, row=8)
+        # def Date_to_database(self):
+        self.date = self.data_to_number
+        # self.date = self.data_to_number
 
+        self.date_int = (self.date[0:4] + self.date[5:7] + self.date[8:])
 
-    # def ButtonOfChoose():
-    #     print("XD")
-    # def ChooseList(self):
-    #     v = IntVar()
-    #     Radiobutton(screen, text="Sortuj od najnizszej kwoty", variable=v, value=1, command=ChooseList).pack(anchor=W)
-    #     Radiobutton(screen, text="Sortuj od najwyzszej kwoty", variable=v, value=2, command=ChooseList).pack(anchor=W)
-    def DBsubmit(self):
-        """
-
-        """
         conn = sqlite3.connect("baza.db")
-        conn.execute("insert into transakcje (nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji) values (?, ?, ?, ?)",
-                    (self.nazwa1tekst,self.kwota1tekst,self.data1tekst,self.opis1tekst))
-
+        conn.execute(
+            "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
+            "description_of_transaction) values (?,?, ? ,?)",
+            (self.name1text, self.price1text, self.date_int, self.description1text))
 
         conn.commit()
 
-
         conn.close()
-    def DBread(self):
 
-
-        """
-        This function is have to transform data from database to python, and print sorted data's
-        """
-        conn = sqlite3.connect("baza.db")
-        cursor = conn.execute(
-            "SELECT nazwa_transakcji,kwota_transakcji,data_transakcji,opis_transakcji from transakcje")
-        for i in cursor:
-            # print("NAZWA = ", row[0])
-            # print("KWOTA = ", row[1])
-            # print("DATA = ", row[2])
-            # print("OPIS = ", row[3], "\n")
-            list_of_data = []
-            list_of_data.append(i)
-
-
-
-        cursor = conn.execute(
-            "SELECT * from transakcje ORDER BY kwota_transakcji DESC")
-
-        for i in cursor:
-
-
-
-            # Create an instance of tkinter frame
-            win = Tk()
-
-            # Set the size of the tkinter window
-            win.geometry("700x350")
-
-            # Create an object of Style widget
-            style = ttk.Style()
-            style.theme_use('clam')
-
-            # Add a Treeview widget
-            tree = ttk.Treeview(win, column=("Nazwa", "Kota", "Data","Opis"), show='headings', height=5)
-            tree.column("# 1", anchor=CENTER)
-            tree.heading("# 1", text="Nazwa Transakcji")
-            tree.column("# 2", anchor=CENTER)
-            tree.heading("# 2", text="Kwota Transakcji")
-            tree.column("# 3", anchor=CENTER)
-            tree.heading("# 3", text="Data Transakcji")
-            tree.column("# 4", anchor=CENTER)
-            tree.heading("# 4", text="Opis Transakcji")
-
-            # Insert the data in Treeview widget
-            tree.insert('', 'end', text="1", values=(self.nazwa1tekst, 'Kumar', '17701'))
-            tree.insert('', 'end', text="1", values=('0','0','0','0'))
-            tree.insert('', 'end', text="1", values=('Manisha', 'Joshi', '17703'))
-            tree.insert('', 'end', text="1", values=('Shivam', 'Mehrotra', '17704'))
-            tree.pack()
-            win.mainloop()
-
-            message = tk.Label(self.root, text=i[0]).grid(column=1,row=10),
-            message = tk.Label(self.root, text=i[1]).grid(column=2,row=10),
-            message = tk.Label(self.root, text=i[2]).grid(column=3,row=10),
-            message = tk.Label(self.root, text=i[3]).grid(column=4, row=10),
-        conn.commit()
-        conn.close()
-        return list_of_data
-
+        return self.date_int
 
 
 App = App()
-
-
-
-
-#
-# screen = Tk()
-# def ChooseList():
-#     print("XD")
-# v = IntVar()
-# Radiobutton(screen, text="Sortuj od najnizszej kwoty", variable=v, value=1,command=ChooseList).pack(anchor=W)
-# Radiobutton(screen, text="Sortuj od najwyzszej kwoty", variable=v, value=2,command=ChooseList).pack(anchor=W)
-#
-# mainloop()
