@@ -4,54 +4,65 @@ from tkinter import ttk
 import sqlite3
 
 
-def database_read(sorting_string):
+def database_submit(name_var, price_var, data_var, description_var, ):
     """
-    This function is have to transform data from database to python and return list of data
+    This function is have to change data (for example: 2023.01.01 to 20230101 ) for easy sort
+    and submit all data from user to database
     """
+
+    data_var = str(data_var)
+    data_to_number = data_var
+
+    # def Date_to_database(self):
+    date = data_to_number
+    # date = self.data_to_number
+
+    date_int = (date[0:4] + date[5:7] + date[8:])
+
     conn = sqlite3.connect("baza.db")
-    cursor = conn.execute(f"SELECT * FROM transactions {sorting_string}")
+    conn.execute(
+        "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
+        "description_of_transaction) values (?,?, ? ,?)",
+        (name_var, price_var, date_int, description_var))
 
-    list_of_data = []
-    for i in cursor:
-        list_of_data.append(i)
+    conn.commit()
 
-    return list_of_data
+    conn.close()
 
 
 class App:
     def __init__(self):
-        super().__init__()
-        self.date = None
-        self.data_to_number = None
-        self.price1text = None
-        self.description1text = None
-        self.data1text = None
-        self.name1text = None
-        self.date_int = None
+        self.data_to_number = ""
+
         self.root = tk.Tk()
-        self.Name1 = tk.StringVar()
-        self.price1 = tk.StringVar()
-        self.data1 = tk.StringVar()
-        self.description1 = tk.StringVar()
+        self.sorting_string = StringVar()
         self.main()
-
         self.root.mainloop()
-
-    def main(self):
-        self.create_window()
-        self.add()
-        self.submit_values()
-        database_read(sorting_string=None)
 
     @staticmethod
     def delete():
         print("Delete transaction Test")
 
-    def print_transactions(self, sorting_string="ORDER BY price_of_transaction DESC"):
+    def database_read(self):
+        """
+        This function is have to transform data from database to python and return list of data
+        """
+
+        conn = sqlite3.connect("baza.db")
+        cursor = conn.execute(f"SELECT * FROM transactions {self.sorting_string.get()}")
+
+        list_of_data = []
+        for i in cursor:
+            list_of_data.append(i)
+
+        return list_of_data
+
+    def print_transactions(self):
         """
         This function is have to create window where are all data of transactions
         """
-        list_of_data = database_read(sorting_string)
+
+        list_of_data = self.database_read()
         conn = sqlite3.connect("baza.db")
         win = Tk()
         win.geometry("700x350")
@@ -68,17 +79,12 @@ class App:
         tree.column("# 4", anchor=CENTER)
         tree.heading("# 4", text="description transaction")
 
-        # Change data (for example: 20233001 to 01.30.2023)
         for i in list_of_data:
-            self.date = str(i[2])
+            date = str(i[2])
 
-            # self.date = self.data_to_number
+            date_int = (date[6:8] + "." + date[4:6] + "." + date[0:4])
 
-            self.date_int = (self.date[6:8] + "." + self.date[4:6] + "." + self.date[0:4])
-            # self.date_int = self(f"{self.date[6:7]}:{self.date[4:5]}:{self.date[0:3]}")
-            print(self.date_int)
-
-            tree.insert('', 'end', text="1", values=(i[0], i[1], self.date_int, i[3]))
+            tree.insert('', 'end', text="1", values=(i[0], i[1], date_int, i[3]))
 
         tree.pack()
         win.mainloop()
@@ -86,15 +92,12 @@ class App:
         conn.commit()
         conn.close()
 
-    def submit_values(self):
+    def submit_values(self, name_var, price_var, data_var, description_var):
         """
         This function is have to get text from entries (data of name, price, date, description)
         """
-        self.name1text = self.Name1.get()
-        self.price1text = self.price1.get()
-        self.data1text = self.data1.get()
-        self.description1text = self.description1.get()
-        self.database_submit()
+        print(name_var, price_var, data_var, description_var, "TEST")
+        database_submit(name_var, price_var, data_var, description_var)
         self.print_transactions()
 
     def add(self):
@@ -102,18 +105,21 @@ class App:
         This function is current when button "Add Transaction" was used.
         She is to create entries and button off submit values which have to save data from the user.
         """
-
-        name_of_transaction = tk.Entry(self.root, textvariable=self.Name1)
+        Name1 = tk.StringVar()
+        price1 = tk.StringVar()
+        data1 = tk.StringVar()
+        description1 = tk.StringVar()
+        name_of_transaction = tk.Entry(self.root, textvariable=Name1)
         name_of_transaction.grid(column=1, row=6)
-        price_of_transaction = tk.Entry(self.root, textvariable=self.price1)
+        price_of_transaction = tk.Entry(self.root, textvariable=price1)
         price_of_transaction.grid(column=2, row=6)
-        data_of_transaction = tk.Entry(self.root, textvariable=self.data1)
+        data_of_transaction = tk.Entry(self.root, textvariable=data1)
         data_of_transaction.grid(column=3, row=6)
-        description_of_transaction = tk.Entry(self.root, textvariable=self.description1)
+        description_of_transaction = tk.Entry(self.root, textvariable=description1)
         description_of_transaction.grid(column=4, row=6)
 
         tk.Button(self.root, text="Submit", command=lambda:
-        self.submit_values()).grid(column=6, row=5)
+        self.submit_values(Name1.get(), price1.get(), data1.get(), description1.get())).grid(column=4, row=4)
 
     def create_window(self):
         """
@@ -130,47 +136,23 @@ class App:
         tk.Label(self.root, text="Data ").grid(column=3, row=5)
         tk.Label(self.root, text="    description").grid(column=4, row=5)
 
-        sorting_string = StringVar()
-        #Buttons of sorting
-        Radiobutton(self.root, text="Sort by cheapest", variable=sorting_string,
+        self.sorting_string = tk.StringVar()
+        # Buttons of sorting
+        Radiobutton(self.root, text="Sort by cheapest", variable=self.sorting_string,
                     value="ORDER BY price_of_transaction",
-                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=10)
-        Radiobutton(self.root, text="Sort by most expensive", variable=sorting_string,
+                    command=lambda: self.print_transactions()).grid(column=16, row=10)
+        Radiobutton(self.root, text="Sort by most expensive", variable=self.sorting_string,
                     value="ORDER BY price_of_transaction DESC",
-                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=11)
-        Radiobutton(self.root, text="Sort by most recent", variable=sorting_string,
+                    command=lambda: self.print_transactions()).grid(column=16, row=11)
+        Radiobutton(self.root, text="Sort by most recent", variable=self.sorting_string,
                     value="ORDER BY data_of_transaction",
-                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=12)
-        Radiobutton(self.root, text="Sort by oldest", variable=sorting_string,
+                    command=lambda: self.print_transactions()).grid(column=16, row=12)
+        Radiobutton(self.root, text="Sort by oldest", variable=self.sorting_string,
                     value="ORDER BY data_of_transaction DESC",
-                    command=lambda: self.print_transactions(sorting_string.get())).grid(column=16, row=13)
+                    command=lambda: self.print_transactions()).grid(column=16, row=13)
 
-    def database_submit(self):
-        """
-        This function is have to change data (for example: 2023.01.01 to 20230101 ) for easy sort
-        and submit all data from user to database
-        """
-
-        self.data1text = str(self.data1text)
-        self.data_to_number = self.data1text
-
-        # def Date_to_database(self):
-        self.date = self.data_to_number
-        # self.date = self.data_to_number
-
-        self.date_int = (self.date[0:4] + self.date[5:7] + self.date[8:])
-
-        conn = sqlite3.connect("baza.db")
-        conn.execute(
-            "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
-            "description_of_transaction) values (?,?, ? ,?)",
-            (self.name1text, self.price1text, self.date_int, self.description1text))
-
-        conn.commit()
-
-        conn.close()
-
-        return self.date_int
+    def main(self):
+        self.create_window()
 
 
 App = App()
