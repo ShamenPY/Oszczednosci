@@ -1,51 +1,60 @@
+import datetime
+import logging
+import sqlite3
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
-import sqlite3
-
-
-def database_submit(name_var, price_var, data_var, description_var, ):
-    """
-    This function is have to change data (for example: 2023.01.01 to 20230101 ) for easy sort
-    and submit all data from user to database
-    """
-
-    data_var = str(data_var)
-    data_to_number = data_var
-
-    # def Date_to_database(self):
-    date = data_to_number
-    # date = self.data_to_number
-
-    date_int = (date[0:4] + date[5:7] + date[8:])
-
-    conn = sqlite3.connect("baza.db")
-    conn.execute(
-        "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
-        "description_of_transaction) values (?,?, ? ,?)",
-        (name_var, price_var, date_int, description_var))
-
-    conn.commit()
-
-    conn.close()
 
 
 class App:
     def __init__(self):
-        self.data_to_number = ""
 
         self.root = tk.Tk()
         self.sorting_string = StringVar()
-        self.main()
-        self.root.mainloop()
+
+    def delete(self):
+        pass
 
     @staticmethod
-    def delete():
-        print("Delete transaction Test")
+    def database_submit(name, price, data, description, ):
+        """
+        This function submits user input data to a database by checking if the input is valid
+        (year <= 2023, month <= 12, and day <= 31) and then inserting the input into the "transactions" table.
+        It also includes error handling for invalid data format.
+        """
+
+        data_now = datetime.datetime.now()
+        date_int = (data[0:4] + data[5:7] + data[8:])
+        year_now = int(data_now.year)
+
+        try:
+
+            user_year = int(data[0:4])
+            user_month = int(data[5:7])
+            user_day = int(data[8:])
+            if user_year <= year_now and user_month <= 12 and user_day <= 31:
+                conn = sqlite3.connect("baza.db")
+                conn.execute(
+                    "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
+                    "description_of_transaction) values (?,?, ? ,?)",
+                    (name, price, date_int, description))
+
+                conn.commit()
+
+                conn.close()
+            else:
+                error_window = tk.Tk()
+                tk.Label(error_window, text="Year must be less or equal to 2023, month must be in range 1-12 and "
+                                            "number of day must be in range 1-30! ").grid(column=1, row=1)
+                error_window.mainloop()
+
+        except ValueError as ex:
+            logging.error("Data of transaction must be a number, e.g.: 2021.12.30  ( YYYY.MM.DD ) ", ex)
 
     def database_read(self):
         """
         This function is have to transform data from database to python and return list of data
+        which will print data to window (print_transaction function)
         """
 
         conn = sqlite3.connect("baza.db")
@@ -59,7 +68,8 @@ class App:
 
     def print_transactions(self):
         """
-        This function is have to create window where are all data of transactions
+        This function display the transaction data stored in the database in a GUI using tkinter library,
+        by creating a treeview widget and inserting the data into it, showing the data in a tabular format.
         """
 
         list_of_data = self.database_read()
@@ -70,7 +80,7 @@ class App:
         style.theme_use('clam')
 
         tree = ttk.Treeview(win, show='headings', height=10, columns="#1, #2, #3, #4")
-        tree.column("#1", anchor=CENTER)
+        tree.column("# 1", anchor=CENTER)
         tree.heading("# 1", text="Name transaction")
         tree.column("# 2", anchor=CENTER)
         tree.heading("# 2", text="price transaction")
@@ -92,12 +102,12 @@ class App:
         conn.commit()
         conn.close()
 
-    def submit_values(self, name_var, price_var, data_var, description_var):
+    def submit_values(self, name, price, data, description):
         """
         This function is have to get text from entries (data of name, price, date, description)
         """
-        print(name_var, price_var, data_var, description_var, "TEST")
-        database_submit(name_var, price_var, data_var, description_var)
+        print(name, price, data, description, "TEST")
+        self.database_submit(name, price, data, description)
         self.print_transactions()
 
     def add(self):
@@ -153,6 +163,8 @@ class App:
 
     def main(self):
         self.create_window()
+        self.root.mainloop()
 
 
-App = App()
+start = App()
+start.main()
