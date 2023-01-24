@@ -7,16 +7,48 @@ from tkinter import ttk
 
 
 class App:
-    def __init__(self):
 
+    def __init__(self):
         self.root = tk.Tk()
         self.sorting_string = StringVar()
 
-    def delete(self):
-        pass
+    @staticmethod
+    def delete_func(name_to_delete):
+        """
+        This function is have to get name of transaction from delete_window() which user
+        want to delete and delete this transaction from database
+        """
+        print(name_to_delete, "TEST")
+        conn = sqlite3.connect("baza.db")
+        try:
+            conn.execute(f" DELETE FROM transactions WHERE name_of_transaction = {name_to_delete}")
+            print(f"Successfully deleted element from database")
+            conn.commit()
+            conn.close()
+
+        except Exception as ex:
+            # It will be called when the user enters a name not belonging to the database
+            logging.error("This name of transaction not exist in database!", ex)
+            error_window = tk.Tk()
+            tk.Label(error_window, text="This name of transaction not exist in database, please input other "
+                                        "name of transaction which exist!").grid(column=1, row=1)
+            error_window.mainloop()
+
+    def delete_window(self):
+        """
+        This function is have to create a window where user will input name of transaction which want to delete
+        name of transaction to delete will transform to delete_func()
+        """
+        window_of_delete = tk.Tk()
+
+        delete_entry1 = tk.Entry(window_of_delete)
+        delete_entry1.grid(column=1, row=1)
+        tk.Button(window_of_delete, text="Delete", command=lambda:
+        self.delete_func(delete_entry1.get())).grid(column=1, row=2)
+        window_of_delete.mainloop()
 
     @staticmethod
-    def database_submit(name, price, data, description, ):
+    def database_submit(name, price, data, description):
         """
         This function submits user input data to a database by checking if the input is valid
         (year <= 2023, month <= 12, and day <= 31) and then inserting the input into the "transactions" table.
@@ -31,18 +63,25 @@ class App:
 
             user_year = int(data[0:4])
             user_month = int(data[5:7])
+            print(user_month)
             user_day = int(data[8:])
             if user_year <= year_now and user_month <= 12 and user_day <= 31:
-                conn = sqlite3.connect("baza.db")
-                conn.execute(
-                    "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
-                    "description_of_transaction) values (?,?, ? ,?)",
-                    (name, price, date_int, description))
+                if price.isnumeric():
+                    conn = sqlite3.connect("baza.db")
+                    conn.execute(
+                        "insert into transactions (name_of_transaction,price_of_transaction,data_of_transaction, "
+                        "description_of_transaction) values (?,?, ? ,?)", (name, price, date_int, description))
 
-                conn.commit()
+                    conn.commit()
 
-                conn.close()
+                    conn.close()
+                else:
+                    error_window = tk.Tk()
+                    tk.Label(error_window, text="Price must be a number...").grid(column=1, row=1)
+                    error_window.mainloop()
+
             else:
+
                 error_window = tk.Tk()
                 tk.Label(error_window, text="Year must be less or equal to 2023, month must be in range 1-12 and "
                                             "number of day must be in range 1-30! ").grid(column=1, row=1)
@@ -91,9 +130,7 @@ class App:
 
         for i in list_of_data:
             date = str(i[2])
-
             date_int = (date[6:8] + "." + date[4:6] + "." + date[0:4])
-
             tree.insert('', 'end', text="1", values=(i[0], i[1], date_int, i[3]))
 
         tree.pack()
@@ -115,31 +152,28 @@ class App:
         This function is current when button "Add Transaction" was used.
         She is to create entries and button off submit values which have to save data from the user.
         """
-        Name1 = tk.StringVar()
-        price1 = tk.StringVar()
-        data1 = tk.StringVar()
-        description1 = tk.StringVar()
-        name_of_transaction = tk.Entry(self.root, textvariable=Name1)
+
+        name_of_transaction = tk.Entry(self.root)
         name_of_transaction.grid(column=1, row=6)
-        price_of_transaction = tk.Entry(self.root, textvariable=price1)
+        price_of_transaction = tk.Entry(self.root)
         price_of_transaction.grid(column=2, row=6)
-        data_of_transaction = tk.Entry(self.root, textvariable=data1)
+        data_of_transaction = tk.Entry(self.root)
         data_of_transaction.grid(column=3, row=6)
-        description_of_transaction = tk.Entry(self.root, textvariable=description1)
+        description_of_transaction = tk.Entry(self.root)
         description_of_transaction.grid(column=4, row=6)
 
-        tk.Button(self.root, text="Submit", command=lambda:
-        self.submit_values(Name1.get(), price1.get(), data1.get(), description1.get())).grid(column=4, row=4)
+        tk.Button(self.root, text="Submit", command=lambda: self.submit_values(name_of_transaction.get(),
+        price_of_transaction.get(), data_of_transaction.get(), description_of_transaction.get())).grid(column=4, row=4)
 
     def create_window(self):
         """
-        This function is have to create main window with texts and buttons
+        This function is have to create main window ( buttons of sorting, add, delete )
         """
         self.root.geometry("960x1024")
         self.root.title("Oszczędności")
         add_transaction = ttk.Button(self.root, text="Add Transaction", command=self.add)
         add_transaction.grid(column=1, row=1)
-        delete_transaction = ttk.Button(self.root, text="Delete Transaction", command=self.delete())
+        delete_transaction = ttk.Button(self.root, text="Delete Transaction", command=self.delete_window)
         delete_transaction.grid(column=2, row=1)
         tk.Label(self.root, text="Name transaction").grid(column=1, row=5)
         tk.Label(self.root, text="price").grid(column=2, row=5)
